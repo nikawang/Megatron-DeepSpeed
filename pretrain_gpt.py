@@ -26,7 +26,7 @@ import subprocess
 
 from torch import nn
 import torch.nn.functional as F
-
+import wandb
 
 def model_provider(pre_process=True, post_process=True):
     """Build the model."""
@@ -211,15 +211,19 @@ def loss_func(loss_mask, moe_loss, mos_loss, output_tensor):
         # assert max(args.num_experts) >= 1
         loss = loss + moe_loss + mos_loss
         if args.mos:
+            wandb.log(loss)
             return loss, {'total loss': loss, 'lm loss': averaged_loss[0], 'moe loss': moe_loss, 'mos loss': mos_loss}
         elif args.kd:
+            wandb.log(loss)
             return loss, {'total loss': loss, 'lm loss': averaged_loss[0], 'moe loss': moe_loss, 'kd loss': mos_loss}
         print_rank_0('>>> total loss: {}, lm loss {}, kd loss {}'.format(loss, averaged_loss[0], mos_loss))
     else:
         if max(args.num_experts) <= 1:
+            wandb.log(loss)
             return loss, {'lm loss': averaged_loss[0]}
         else:
             loss = loss + moe_loss
+            wandb.log(loss)
             return loss, {'lm loss': averaged_loss[0], 'moe loss': moe_loss}
 
 def calculate_mos_loss(args, stu_output, teacher_model, tokens, position_ids, attention_mask):
@@ -291,6 +295,7 @@ def forward_step(data_iterator, model):
             mos_loss = calculate_mos_loss(args, stu_output,
                 args.teacher_model[0], tokens, position_ids, attention_mask)
 
+
     # Output_tensor stores the standard loss, loos_func calculates the total loss.
     return output_tensor, partial(loss_func, loss_mask, moe_loss, mos_loss)
 
@@ -347,6 +352,7 @@ def git_ds_info():
 
 if __name__ == "__main__":
     git_ds_info()
+    wandb.init(project="gpt_pretraining", entity="./")
     pretrain(train_valid_test_datasets_provider,
              model_provider,
              ModelType.encoder_or_decoder,
