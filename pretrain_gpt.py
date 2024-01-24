@@ -195,7 +195,8 @@ def get_batch_pipe(data):
         if labels is not None:
             labels = labels[:, :args.curriculum_seqlen].contiguous()
         loss_mask = loss_mask[:, :args.curriculum_seqlen].contiguous()
-
+    
+    
     return (tokens, position_ids, attention_mask), (labels, loss_mask)
 
 
@@ -303,6 +304,7 @@ def forward_step(data_iterator, model):
 def train_valid_test_datasets_provider(train_val_test_num_samples):
     """Build train, valid, and test datasets."""
     args = get_args()
+    
 
     print_rank_0('> building train, validation, and test datasets '
                  'for GPT ...')
@@ -352,7 +354,9 @@ def git_ds_info():
 
 if __name__ == "__main__":
     git_ds_info()
-    wandb.init(project="gpt_pretraining", entity="./")
+    #get env ARGO_WORKFLOW
+    argo_workflow_name = os.getenv('ARGO_WORKFLOW_NAME')
+    wandb.init(project="gpt_pretraining", dir=f"/app/workdir/{argo_workflow_name}")
     pretrain(train_valid_test_datasets_provider,
              model_provider,
              ModelType.encoder_or_decoder,

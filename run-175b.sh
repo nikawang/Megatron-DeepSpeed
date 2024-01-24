@@ -1,18 +1,13 @@
 #!/bin/bash
 set -ex
 
-data_options=" \
-         --vocab-file ${VOCAB_PATH} \
-         --merge-file ${MERGE_PATH} \
-         --data-path ${DATA_PATH} \
-         --data-impl mmap"
 
-BASE_PATH=$PWD/dataset/
-DATA_PATH=${BASE_PATH}/BookCorpusDataset_text_document
+BASE_PATH=$PWD/../$ARGO_WORKFLOW_NAME/dataset/
+DATA_PATH=BASE_PATH/my-gpt2_text_document
 DS_CONFIG=ds_config.json
 
 # Hostfile path
-HF=/job/hostfile 
+HF=/tmp/hostfile 
 
 # Disabling tensor/pipeline parallelism
 TP=1
@@ -29,7 +24,7 @@ SEQ=1024
 
 MICRO_BATCH=4
 NODES=1
-GPN=8
+GPN=1
 GLOBAL_BATCH=$(( ${GPN} * ${MICRO_BATCH} * ${NODES} ))
 
 # Initial power scale for loss
@@ -107,7 +102,7 @@ ds_args=" --deepspeed-activation-checkpointing ${ds_args}"
 
 
 
-deepspeed --force_multi --num_nodes=$NODES --hostfile $HF pretrain_gpt.py \
+deepspeed pretrain_gpt.py \
     --tensor-model-parallel-size $TP \
     --pipeline-model-parallel-size $PP \
     --num-layers $NLAYERS \
