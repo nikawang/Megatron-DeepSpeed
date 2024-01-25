@@ -145,7 +145,6 @@ def _build_train_valid_test_datasets(data_prefix, data_impl, splits_string,
         if splits[index + 1] > splits[index]:
             documents = np.arange(start=splits[index], stop=splits[index + 1],
                                   step=1, dtype=np.int32)
-            time.sleep(10)
             dataset = GPTDataset(name, data_prefix, documents, indexed_dataset,
                                  splits_string,
                                  train_valid_test_num_samples[index],
@@ -493,13 +492,34 @@ def _build_index_mappings(name, data_prefix, documents, sizes,
     # Load mappings.
     start_time = time.time()
     print_rank_0(f" > loading doc-idx mapping from {idx_path['doc']}")
-    doc_idx = np.load(idx_path['doc'], allow_pickle=True, mmap_mode='r')
+    while True:
+        try:
+            doc_idx = np.load(idx_path['doc'], allow_pickle=True, mmap_mode='r')
+            break
+        except:
+            print_rank_0(f" > failed to load doc-idx mapping from {idx_path['doc']}, retrying...")
+            time.sleep(1)
+    # doc_idx = np.load(idx_path['doc'], allow_pickle=True, mmap_mode='r')
 
     print_rank_0(f" > loading sample-idx mapping from {idx_path['sample']}")
-    sample_idx = np.load(idx_path['sample'], allow_pickle=True, mmap_mode='r')
+    while True:
+        try:
+            sample_idx = np.load(idx_path['sample'], allow_pickle=True, mmap_mode='r')
+            break
+        except:
+            print_rank_0(f" > failed to load sample-idx mapping from {idx_path['sample']}, retrying...")
+            time.sleep(1)
+    # sample_idx = np.load(idx_path['sample'], allow_pickle=True, mmap_mode='r')
 
     print_rank_0(f" > loading shuffle-idx mapping from {idx_path['shuffle']}")
-    shuffle_idx = np.load(idx_path['shuffle'], allow_pickle=True, mmap_mode='r')
+    while True:
+        try:
+            shuffle_idx = np.load(idx_path['shuffle'], allow_pickle=True, mmap_mode='r')
+            break
+        except:
+            print_rank_0(f" > failed to load shuffle-idx mapping from {idx_path['shuffle']}, retrying...")
+            time.sleep(1)
+    # shuffle_idx = np.load(idx_path['shuffle'], allow_pickle=True, mmap_mode='r')
 
     print_rank_0('    loaded indexed file in {:3.3f} seconds'.format(
         time.time() - start_time))
