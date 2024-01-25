@@ -212,19 +212,40 @@ def loss_func(loss_mask, moe_loss, mos_loss, output_tensor):
         # assert max(args.num_experts) >= 1
         loss = loss + moe_loss + mos_loss
         if args.mos:
-            wandb.log(loss)
+            metrics = {
+                'total_loss': loss,
+                'lm loss': averaged_loss[0],
+                'moe loss': moe_loss,
+                'mos loss': mos_loss
+            }
+            wandb.log(metrics)
             return loss, {'total loss': loss, 'lm loss': averaged_loss[0], 'moe loss': moe_loss, 'mos loss': mos_loss}
         elif args.kd:
-            wandb.log(loss)
+            metrics = {
+                'total_loss': loss,
+                'lm loss': averaged_loss[0],
+                'moe loss': moe_loss,
+                'mos loss': mos_loss
+            }
+            wandb.log(metrics)
             return loss, {'total loss': loss, 'lm loss': averaged_loss[0], 'moe loss': moe_loss, 'kd loss': mos_loss}
         print_rank_0('>>> total loss: {}, lm loss {}, kd loss {}'.format(loss, averaged_loss[0], mos_loss))
     else:
         if max(args.num_experts) <= 1:
-            wandb.log(loss)
+            metrics = {
+                'total_loss': loss,
+                'lm loss': averaged_loss[0]
+            }
+            wandb.log(metrics)
             return loss, {'lm loss': averaged_loss[0]}
         else:
             loss = loss + moe_loss
-            wandb.log(loss)
+            metrics = {
+                'total_loss': loss,
+                'lm loss': averaged_loss[0],
+                'moe loss': moe_loss
+            }
+            wandb.log(metrics)
             return loss, {'lm loss': averaged_loss[0], 'moe loss': moe_loss}
 
 def calculate_mos_loss(args, stu_output, teacher_model, tokens, position_ids, attention_mask):
