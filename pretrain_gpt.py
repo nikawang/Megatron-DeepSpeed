@@ -357,7 +357,7 @@ if __name__ == "__main__":
     git_ds_info()
     #get env ARGO_WORKFLOW
     print(argo_workflow_name)
-    wandb.init(project="gpt_pretraining", dir=f'/app/workdir/{argo_workflow_name}')
+    wandb.init(project="gpt_pretraining", dir="/app/workdir/wandb")
     pretrain(train_valid_test_datasets_provider,
              model_provider,
              ModelType.encoder_or_decoder,
